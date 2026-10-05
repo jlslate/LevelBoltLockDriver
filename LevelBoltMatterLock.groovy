@@ -1,13 +1,16 @@
 /*
  * Level Bolt (Matter) Lock - Hubitat driver
+ * https://github.com/jlslate/LevelBoltLockDriver
  *
- * Supports: lock / unlock, lock state, battery, refresh, Matter subscription.
- * Matter clusters used:
- *   0x0101 Door Lock    - attr 0x0000 LockState, cmd 0x00 LockDoor, cmd 0x01 UnlockDoor
- *   0x002F Power Source - attr 0x000C BatPercentRemaining (units of 0.5%)
+ * Supports: lock / unlock, lock state, battery status, refresh, Matter subscription.
+ * Matter clusters used (endpoint 1):
+ *   0x0101 Door Lock    - attr 0x0000 LockState, cmd 0x00 LockDoor, cmd 0x01 UnlockDoor,
+ *                         cmd 0x03 UnlockWithTimeout (optional)
+ *   0x002F Power Source - attr 0x000E BatChargeLevel (good/warning/critical),
+ *                         attr 0x000C BatPercentRemaining (units of 0.5%, if the lock reports it)
  *
- * NOTE: written against Hubitat's Matter API without access to the hardware; check the
- * debug logs on first use and adjust the battery endpoint preference if battery stays empty.
+ * The Level Bolt only accepts lock/unlock as a Matter timed invoke, so commands are sent with a
+ * timed-request window (default 5000 ms; see the "Timed invoke window" preference).
  */
 import groovy.transform.Field
 import hubitat.matter.DataType
