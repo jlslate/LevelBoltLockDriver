@@ -94,12 +94,20 @@ void lock() {
     String cmd = doorCmd(CMD_LOCK)
     log.info "${device.displayName} lock command sent: ${cmd}"
     sendMatter(cmd)
+    verifyState()
 }
 
 void unlock() {
     String cmd = doorCmd(CMD_UNLOCK)
     log.info "${device.displayName} unlock command sent: ${cmd}"
     sendMatter(cmd)
+    verifyState()
+}
+
+// Subscription reports can be missed, so re-read the lock state shortly after each command.
+private void verifyState() {
+    runIn(4, "refresh")
+    runIn(15, "refresh")
 }
 
 void refresh() {
