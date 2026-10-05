@@ -78,7 +78,7 @@ private void cleanupOldDriverData() {
 }
 
 void initialize() {
-    log.info "${device.displayName} initializing: subscribing and refreshing"
+    if (settings.logEnable != false) log.debug "initializing: subscribing and refreshing"
     if (settings.logEnable != false) runIn(1800, "logsOff")
     sendHubCommand(new hubitat.device.HubAction(subscribeCmd(), hubitat.device.Protocol.MATTER))
     refresh()
@@ -98,7 +98,8 @@ private String doorCmd(Integer cmd) {
 
 void lock() {
     String cmd = doorCmd(CMD_LOCK)
-    log.info "${device.displayName} lock command sent: ${cmd}"
+    if (settings.txtEnable != false) log.info "${device.displayName} lock requested"
+    if (settings.logEnable != false) log.debug "lock command sent: ${cmd}"
     sendMatter(cmd)
     verifyState()
 }
@@ -114,7 +115,8 @@ void unlock() {
     } else {
         cmd = doorCmd(CMD_UNLOCK)
     }
-    log.info "${device.displayName} unlock command sent: ${cmd}"
+    if (settings.txtEnable != false) log.info "${device.displayName} unlock requested"
+    if (settings.logEnable != false) log.debug "unlock command sent: ${cmd}"
     sendMatter(cmd)
     verifyState()
 }
@@ -126,7 +128,7 @@ private void verifyState() {
 }
 
 void refresh() {
-    log.info "${device.displayName} refresh"
+    if (settings.logEnable != false) log.debug "refresh"
     sendMatter(matter.readAttributes(attributePaths()))
 }
 
@@ -173,7 +175,7 @@ private void handleLockState(Integer state) {
     String name = LOCK_STATES.get(state, "unknown")
     String detail = [0: "notFullyLocked", 1: "locked", 2: "unlocked", 3: "unlatched"].get(state, "unknown")
     String text = "${device.displayName} is ${name}"
-    if (settings.txtEnable != false) log.info text
+    if (device.currentValue("lock") != name && settings.txtEnable != false) log.info text
     sendEvent(name: "lock", value: name, descriptionText: text)
     sendEvent(name: "lockStateDetail", value: detail)
 }
@@ -181,7 +183,7 @@ private void handleLockState(Integer state) {
 private void handleChargeLevel(Integer level) {
     String status = CHARGE_LEVELS.get(level, "unknown")
     String text = "${device.displayName} battery is ${status}"
-    if (settings.txtEnable != false) log.info text
+    if (device.currentValue("batteryStatus") != status && settings.txtEnable != false) log.info text
     sendEvent(name: "batteryStatus", value: status, descriptionText: text)
     // Only fall back to a stand-in percentage when the lock doesn't report a real one.
     if (!state.hasBatteryPercent && CHARGE_LEVEL_PERCENT.containsKey(level)) {
@@ -193,7 +195,7 @@ private void handleBattery(Integer halfPercent) {
     state.hasBatteryPercent = true
     Integer pct = Math.max(0, Math.min(100, (int) Math.round(halfPercent / 2.0)))
     String text = "${device.displayName} battery is ${pct}%"
-    if (settings.txtEnable != false) log.info text
+    if (device.currentValue("battery") != pct && settings.txtEnable != false) log.info text
     sendEvent(name: "battery", value: pct, unit: "%", descriptionText: text)
 }
 
