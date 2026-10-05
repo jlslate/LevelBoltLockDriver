@@ -16,6 +16,13 @@ Tested on a Level Bolt with Matter firmware.
 - Other Matter locks (untested; uses endpoint 1 and the Level Bolt's fingerprint)
 
 ## Install
+
+### Hubitat Package Manager (recommended)
+1. In HPM choose **Install** → **From a URL** and paste:
+   `https://raw.githubusercontent.com/jlslate/LevelBoltLockDriver/main/packageManifest.json`
+2. Then follow steps 3 and 4 below to set the device's driver.
+
+### Manual
 1. Pair the lock with your hub: Devices → Add Device → Matter.
 2. Drivers Code → **New Driver** → **Import** and paste:
    `https://raw.githubusercontent.com/jlslate/LevelBoltLockDriver/main/LevelBoltMatterLock.groovy`
@@ -37,4 +44,4 @@ Tested on a Level Bolt with Matter firmware.
 - **Battery empty:** press Refresh and check the debug log for cluster `002F`.
 
 ## License
-No license specified yet; add one before accepting contributions.
+[The Unlicense](LICENSE): public domain, no warranty.

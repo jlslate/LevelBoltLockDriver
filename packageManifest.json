@@ -1,0 +1,19 @@
+{
+  "packageName": "Level Bolt (Matter) Lock",
+  "author": "James Slate",
+  "version": "1.0.0",
+  "minimumHEVersion": "2.3.9",
+  "dateReleased": "2026-10-05",
+  "licenseFile": "https://raw.githubusercontent.com/jlslate/LevelBoltLockDriver/main/LICENSE",
+  "documentationLink": "https://github.com/jlslate/LevelBoltLockDriver",
+  "releaseNotes": "Initial release: lock/unlock, lock state, battery status for the Level Bolt over Matter.",
+  "drivers": [
+    {
+      "id": "ab6b9e3b-52cd-4876-84a4-6847b468cef3",
+      "name": "Level Bolt Matter Lock",
+      "namespace": "jamesslate",
+      "location": "https://raw.githubusercontent.com/jlslate/LevelBoltLockDriver/main/LevelBoltMatterLock.groovy",
+      "required": true
+    }
+  ]
+}
