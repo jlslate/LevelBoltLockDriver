@@ -11,4 +11,4 @@ Not yet supported: user codes/PINs, auto-relock, LED/sound settings.
 1. Pair the lock with the hub: Add Device → Matter.
 2. Drivers Code → New Driver → paste `LevelBoltMatterLock.groovy` (or Import using the raw URL) → Save.
 3. On the lock's device page set Type to **Level Bolt Matter Lock** and Save.
-4. Save Preferences, then press Refresh. If battery stays empty, set the *Power Source endpoint* preference to `0`.
+4. Save Preferences, then press Refresh.

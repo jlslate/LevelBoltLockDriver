@@ -42,8 +42,6 @@ metadata {
     }
 
     preferences {
-        input name: "lockEndpoint", type: "number", title: "Door Lock endpoint", defaultValue: 1, required: true
-        input name: "batteryEndpoint", type: "number", title: "Power Source endpoint (battery)", defaultValue: 1, required: true
         input name: "timedMs", type: "number", title: "Timed invoke window in ms for lock/unlock (0 = off)", defaultValue: 5000, required: true
         input name: "unlockMethod", type: "enum", title: "Unlock command", options: ["UnlockDoor", "UnlockWithTimeout"], defaultValue: "UnlockDoor"
         input name: "unlockTimeout", type: "number", title: "UnlockWithTimeout: seconds before the lock relocks", defaultValue: 30
@@ -201,8 +199,8 @@ private void handleBattery(Integer halfPercent) {
 
 // ---------------------------------------------------------------- helpers
 
-private Integer lockEp()    { (settings.lockEndpoint    ?: 1) as Integer }
-private Integer batteryEp() { (settings.batteryEndpoint ?: 1) as Integer }
+private Integer lockEp()    { 1 }
+private Integer batteryEp() { 1 }
 
 private List<Map<String, String>> attributePaths() {
     List<Map<String, String>> paths = []
