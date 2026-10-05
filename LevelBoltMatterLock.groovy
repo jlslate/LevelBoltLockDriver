@@ -57,7 +57,15 @@ void updated() {
 }
 
 void configure() {
+    cleanupOldDriverData()
     initialize()
+}
+
+// Remove state and attributes left behind by whatever driver the device used before.
+private void cleanupOldDriverData() {
+    List keep = ["lock", "battery", "lockStateDetail"]
+    state.clear()
+    device.getCurrentStates()?.each { if (!(it.name in keep)) device.deleteCurrentState(it.name) }
 }
 
 void initialize() {
