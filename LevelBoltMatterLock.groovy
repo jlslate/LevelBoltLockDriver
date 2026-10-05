@@ -16,6 +16,9 @@ import hubitat.matter.DataType
 @Field static final Integer POWER_SOURCE_CLUSTER = 0x002F
 @Field static final Integer ATTR_LOCK_STATE      = 0x0000
 @Field static final Integer ATTR_BAT_PERCENT     = 0x000C
+@Field static final Integer ATTR_BAT_CHARGE_LEVEL = 0x000E
+@Field static final Map CHARGE_LEVELS = [0: "good", 1: "warning", 2: "critical"]
+@Field static final Map CHARGE_LEVEL_PERCENT = [0: 100, 1: 20, 2: 5]  // coarse stand-ins; the lock only reports a level, not a percentage
 @Field static final Integer CMD_LOCK             = 0x00
 @Field static final Integer CMD_UNLOCK           = 0x01
 @Field static final Map LOCK_STATES = [0: "unknown", 1: "locked", 2: "unlocked", 3: "unlocked"]  // NotFullyLocked, Locked, Unlocked, Unlatched
@@ -29,6 +32,8 @@ metadata {
         capability "Lock"
         capability "Battery"
         capability "Sensor"
+
+        attribute "batteryStatus", "string"     // good / warning / critical, as reported by the lock
 
         attribute "lockStateDetail", "string"   // raw Matter state name (e.g. notFullyLocked, unlatched)
 
@@ -159,6 +164,8 @@ void parse(String description) {
         handleLockState(toInt(value))
     } else if (cluster == POWER_SOURCE_CLUSTER && attr == ATTR_BAT_PERCENT) {
         handleBattery(toInt(value))
+    } else if (cluster == POWER_SOURCE_CLUSTER && attr == ATTR_BAT_CHARGE_LEVEL) {
+        handleChargeLevel(toInt(value))
     }
 }
 
@@ -171,7 +178,19 @@ private void handleLockState(Integer state) {
     sendEvent(name: "lockStateDetail", value: detail)
 }
 
+private void handleChargeLevel(Integer level) {
+    String status = CHARGE_LEVELS.get(level, "unknown")
+    String text = "${device.displayName} battery is ${status}"
+    if (settings.txtEnable != false) log.info text
+    sendEvent(name: "batteryStatus", value: status, descriptionText: text)
+    // Only fall back to a stand-in percentage when the lock doesn't report a real one.
+    if (!state.hasBatteryPercent && CHARGE_LEVEL_PERCENT.containsKey(level)) {
+        sendEvent(name: "battery", value: CHARGE_LEVEL_PERCENT[level], unit: "%", descriptionText: "${text} (approximate)")
+    }
+}
+
 private void handleBattery(Integer halfPercent) {
+    state.hasBatteryPercent = true
     Integer pct = Math.max(0, Math.min(100, (int) Math.round(halfPercent / 2.0)))
     String text = "${device.displayName} battery is ${pct}%"
     if (settings.txtEnable != false) log.info text
@@ -187,6 +206,7 @@ private List<Map<String, String>> attributePaths() {
     List<Map<String, String>> paths = []
     paths.add(matter.attributePath(lockEp(), DOOR_LOCK_CLUSTER, ATTR_LOCK_STATE))
     paths.add(matter.attributePath(batteryEp(), POWER_SOURCE_CLUSTER, ATTR_BAT_PERCENT))
+    paths.add(matter.attributePath(batteryEp(), POWER_SOURCE_CLUSTER, ATTR_BAT_CHARGE_LEVEL))
     return paths
 }
 
