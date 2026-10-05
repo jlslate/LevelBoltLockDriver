@@ -40,6 +40,7 @@ metadata {
     preferences {
         input name: "lockEndpoint", type: "number", title: "Door Lock endpoint", defaultValue: 1, required: true
         input name: "batteryEndpoint", type: "number", title: "Power Source endpoint (battery)", defaultValue: 1, required: true
+        input name: "timedMs", type: "number", title: "Timed invoke window in ms for lock/unlock (0 = off)", defaultValue: 5000, required: true
         input name: "txtEnable", type: "bool", title: "Enable descriptionText logging", defaultValue: true
         input name: "logEnable", type: "bool", title: "Enable debug logging (auto-off after 30 min)", defaultValue: true
     }
@@ -84,14 +85,22 @@ void logsOff() {
 
 // ---------------------------------------------------------------- commands
 
+private String doorCmd(Integer cmd) {
+    Integer t = (settings.timedMs != null ? settings.timedMs : 5000) as Integer
+    List<Map<String, String>> fields = []
+    return t > 0 ? matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, cmd, fields, t) : matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, cmd)
+}
+
 void lock() {
-    log.info "${device.displayName} lock command sent: ${matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, CMD_LOCK)}"
-    sendMatter(matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, CMD_LOCK))
+    String cmd = doorCmd(CMD_LOCK)
+    log.info "${device.displayName} lock command sent: ${cmd}"
+    sendMatter(cmd)
 }
 
 void unlock() {
-    log.info "${device.displayName} unlock command sent: ${matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, CMD_UNLOCK)}"
-    sendMatter(matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, CMD_UNLOCK))
+    String cmd = doorCmd(CMD_UNLOCK)
+    log.info "${device.displayName} unlock command sent: ${cmd}"
+    sendMatter(cmd)
 }
 
 void refresh() {
