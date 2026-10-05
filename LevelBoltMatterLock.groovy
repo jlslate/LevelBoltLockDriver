@@ -52,7 +52,7 @@ void installed() {
 
 void updated() {
     log.info "${device.displayName} preferences saved"
-    if (logEnable) runIn(1800, "logsOff")
+    if (settings.logEnable != false) runIn(1800, "logsOff")
     initialize()
 }
 
@@ -69,7 +69,8 @@ private void cleanupOldDriverData() {
 }
 
 void initialize() {
-    if (logEnable) runIn(1800, "logsOff")
+    log.info "${device.displayName} initializing: subscribing and refreshing"
+    if (settings.logEnable != false) runIn(1800, "logsOff")
     sendHubCommand(new hubitat.device.HubAction(subscribeCmd(), hubitat.device.Protocol.MATTER))
     refresh()
 }
@@ -82,17 +83,17 @@ void logsOff() {
 // ---------------------------------------------------------------- commands
 
 void lock() {
-    if (logEnable) log.debug "lock()"
+    log.info "${device.displayName} lock command sent"
     sendMatter(matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, CMD_LOCK))
 }
 
 void unlock() {
-    if (logEnable) log.debug "unlock()"
+    log.info "${device.displayName} unlock command sent"
     sendMatter(matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, CMD_UNLOCK))
 }
 
 void refresh() {
-    if (logEnable) log.debug "refresh()"
+    log.info "${device.displayName} refresh"
     sendMatter(matter.readAttributes(attributePaths()))
 }
 
@@ -113,7 +114,7 @@ void parse(String description) {
         log.warn "Unable to parse: ${description} (${e.message})"
         return
     }
-    if (logEnable) log.debug "parse: ${descMap}"
+    if (settings.logEnable != false) log.debug "parse: ${descMap}"
 
     Integer cluster = descMap.clusterInt
     Integer attr    = descMap.attrInt
@@ -133,7 +134,7 @@ private void handleLockState(Integer state) {
     String name = LOCK_STATES.get(state, "unknown")
     String detail = [0: "notFullyLocked", 1: "locked", 2: "unlocked", 3: "unlatched"].get(state, "unknown")
     String text = "${device.displayName} is ${name}"
-    if (txtEnable) log.info text
+    if (settings.txtEnable != false) log.info text
     sendEvent(name: "lock", value: name, descriptionText: text)
     sendEvent(name: "lockStateDetail", value: detail)
 }
@@ -141,7 +142,7 @@ private void handleLockState(Integer state) {
 private void handleBattery(Integer halfPercent) {
     Integer pct = Math.max(0, Math.min(100, (int) Math.round(halfPercent / 2.0)))
     String text = "${device.displayName} battery is ${pct}%"
-    if (txtEnable) log.info text
+    if (settings.txtEnable != false) log.info text
     sendEvent(name: "battery", value: pct, unit: "%", descriptionText: text)
 }
 
