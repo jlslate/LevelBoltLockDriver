@@ -18,9 +18,10 @@ Tested on a Level Bolt with Matter firmware.
 ## Install
 
 ### Hubitat Package Manager (recommended)
-1. In HPM choose **Install** → **From a URL** and paste:
+1. Pair the lock with your hub: Devices → Add Device → Matter.
+2. In HPM choose **Install** → **From a URL** and paste:
    `https://raw.githubusercontent.com/jlslate/LevelBoltLockDriver/main/packageManifest.json`
-2. Then follow steps 3 and 4 below to set the device's driver.
+3. On the lock's device page set **Type** to **Level Bolt Matter Lock**, click **Save Device**, reload the page, click **Save Preferences**, then **Configure** and **Refresh**.
 
 ### Manual
 1. Pair the lock with your hub: Devices → Add Device → Matter.
