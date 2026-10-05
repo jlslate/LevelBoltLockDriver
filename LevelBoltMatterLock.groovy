@@ -29,6 +29,8 @@ metadata {
         capability "Battery"
         capability "Sensor"
 
+        command "diagnose"
+
         attribute "lockStateDetail", "string"   // raw Matter state name (e.g. notFullyLocked, unlatched)
 
         // Reported by the Level Bolt when paired with Hubitat.
@@ -97,6 +99,16 @@ void refresh() {
     sendMatter(matter.readAttributes(attributePaths()))
 }
 
+// Reads Door Lock settings that decide how lock/unlock must be sent; results appear in the debug log.
+void diagnose() {
+    List<Map<String, String>> paths = []
+    [0x0033, 0x0025, 0xFFFC, 0xFFF9].each { paths.add(matter.attributePath(lockEp(), DOOR_LOCK_CLUSTER, it)) }  // RequirePINforRemoteOperation, OperatingMode, FeatureMap, AcceptedCommandList
+    paths.add(matter.attributePath(batteryEp(), POWER_SOURCE_CLUSTER, 0x000C))
+    paths.add(matter.attributePath(batteryEp(), POWER_SOURCE_CLUSTER, 0x0002))  // BatVoltage
+    log.info "${device.displayName} diagnose: reading Door Lock settings, see debug log"
+    sendMatter(matter.readAttributes(paths))
+}
+
 // Called by the hub's Matter device page; reads Basic Information (cluster 0x0028) and logs it.
 void getInfo() {
     List<Map<String, String>> paths = []
@@ -125,7 +137,9 @@ void parse(String description) {
     def value       = descMap.value
     if (cluster == null || attr == null || value == null) return
 
-    if (cluster == 0x0028) {
+    if (cluster == DOOR_LOCK_CLUSTER && attr != ATTR_LOCK_STATE) {
+        log.info "${device.displayName} door lock attr 0x${Integer.toHexString(attr)}: ${value}"
+    } else if (cluster == 0x0028) {
         log.info "${device.displayName} basic info attr 0x${Integer.toHexString(attr)}: ${value}"
     } else if (cluster == DOOR_LOCK_CLUSTER && attr == ATTR_LOCK_STATE) {
         handleLockState(toInt(value))
