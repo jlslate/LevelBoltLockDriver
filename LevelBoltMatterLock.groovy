@@ -83,12 +83,12 @@ void logsOff() {
 // ---------------------------------------------------------------- commands
 
 void lock() {
-    log.info "${device.displayName} lock command sent"
+    log.info "${device.displayName} lock command sent: ${matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, CMD_LOCK)}"
     sendMatter(matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, CMD_LOCK))
 }
 
 void unlock() {
-    log.info "${device.displayName} unlock command sent"
+    log.info "${device.displayName} unlock command sent: ${matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, CMD_UNLOCK)}"
     sendMatter(matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, CMD_UNLOCK))
 }
 
@@ -115,6 +115,10 @@ void parse(String description) {
         return
     }
     if (settings.logEnable != false) log.debug "parse: ${descMap}"
+    if (!descMap) {
+        log.debug "parse: unrecognized raw description: ${description}"
+        return
+    }
 
     Integer cluster = descMap.clusterInt
     Integer attr    = descMap.attrInt
