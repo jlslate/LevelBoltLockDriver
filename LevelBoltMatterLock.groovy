@@ -87,8 +87,7 @@ void logsOff() {
 
 private String doorCmd(Integer cmd) {
     Integer t = (settings.timedMs != null ? settings.timedMs : 5000) as Integer
-    List<Map<String, String>> fields = []
-    return t > 0 ? matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, cmd, fields, t) : matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, cmd)
+    return matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, cmd, t)  // 4th arg is the timed-invoke window in ms (0 = plain invoke)
 }
 
 void lock() {
