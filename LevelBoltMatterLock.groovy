@@ -151,7 +151,7 @@ void parse(String description) {
     }
     if (settings.logEnable != false) log.debug "parse: ${descMap}"
     if (!descMap) {
-        log.debug "parse: unrecognized raw description: ${description}"
+        if (settings.logEnable != false) log.debug "parse: unrecognized raw description: ${description}"
         return
     }
 
