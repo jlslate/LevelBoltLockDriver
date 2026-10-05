@@ -10,6 +10,7 @@
  * debug logs on first use and adjust the battery endpoint preference if battery stays empty.
  */
 import groovy.transform.Field
+import hubitat.matter.DataType
 
 @Field static final Integer DOOR_LOCK_CLUSTER    = 0x0101
 @Field static final Integer POWER_SOURCE_CLUSTER = 0x002F
@@ -41,6 +42,8 @@ metadata {
         input name: "lockEndpoint", type: "number", title: "Door Lock endpoint", defaultValue: 1, required: true
         input name: "batteryEndpoint", type: "number", title: "Power Source endpoint (battery)", defaultValue: 1, required: true
         input name: "timedMs", type: "number", title: "Timed invoke window in ms for lock/unlock (0 = off)", defaultValue: 5000, required: true
+        input name: "unlockMethod", type: "enum", title: "Unlock command", options: ["UnlockDoor", "UnlockWithTimeout"], defaultValue: "UnlockDoor"
+        input name: "unlockTimeout", type: "number", title: "UnlockWithTimeout: seconds before the lock relocks", defaultValue: 30
         input name: "txtEnable", type: "bool", title: "Enable descriptionText logging", defaultValue: true
         input name: "logEnable", type: "bool", title: "Enable debug logging (auto-off after 30 min)", defaultValue: true
     }
@@ -98,7 +101,16 @@ void lock() {
 }
 
 void unlock() {
-    String cmd = doorCmd(CMD_UNLOCK)
+    String cmd
+    if (settings.unlockMethod == "UnlockWithTimeout") {
+        // Door Lock command 0x03, field 0 = Timeout (uint16, seconds)
+        Integer t = (settings.timedMs != null ? settings.timedMs : 5000) as Integer
+        List<Map<String, String>> fields = []
+        fields.add(matter.cmdField(DataType.UINT16, 0, integerTo16bitUnsignedHex((settings.unlockTimeout ?: 30) as Integer)))
+        cmd = matter.invoke(lockEp(), DOOR_LOCK_CLUSTER, 0x03, t, fields)
+    } else {
+        cmd = doorCmd(CMD_UNLOCK)
+    }
     log.info "${device.displayName} unlock command sent: ${cmd}"
     sendMatter(cmd)
     verifyState()
