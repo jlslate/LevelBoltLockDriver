@@ -31,8 +31,8 @@ metadata {
 
         attribute "lockStateDetail", "string"   // raw Matter state name (e.g. notFullyLocked, unlatched)
 
-        // Generic Matter door lock; if auto-match fails, pick this driver manually.
-        fingerprint endpointId: "01", inClusters: "0003,0004,0005,0101", outClusters: "", controllerType: "MAT"
+        // Reported by the Level Bolt when paired with Hubitat.
+        fingerprint endpointId: "01", inClusters: "0003,001D,002F,0101,129FFC00", outClusters: "", model: "Level Bolt (Matter)", manufacturer: "Level Home", controllerType: "MAT"
     }
 
     preferences {
@@ -96,6 +96,13 @@ void refresh() {
     sendMatter(matter.readAttributes(attributePaths()))
 }
 
+// Called by the hub's Matter device page; reads Basic Information (cluster 0x0028) and logs it.
+void getInfo() {
+    List<Map<String, String>> paths = []
+    [0x0001, 0x0003, 0x000A, 0x000C].each { paths.add(matter.attributePath(0x00, 0x0028, it)) }  // vendor, product, sw version, hw version
+    sendMatter(matter.readAttributes(paths))
+}
+
 // ---------------------------------------------------------------- parsing
 
 void parse(String description) {
@@ -113,7 +120,9 @@ void parse(String description) {
     def value       = descMap.value
     if (cluster == null || attr == null || value == null) return
 
-    if (cluster == DOOR_LOCK_CLUSTER && attr == ATTR_LOCK_STATE) {
+    if (cluster == 0x0028) {
+        log.info "${device.displayName} basic info attr 0x${Integer.toHexString(attr)}: ${value}"
+    } else if (cluster == DOOR_LOCK_CLUSTER && attr == ATTR_LOCK_STATE) {
         handleLockState(toInt(value))
     } else if (cluster == POWER_SOURCE_CLUSTER && attr == ATTR_BAT_PERCENT) {
         handleBattery(toInt(value))
